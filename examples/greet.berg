@@ -1,8 +1,10 @@
 
+someConst = { 20 }
+
 mul(a, b) = { a * b }
 
 square(x) = { mul(x, 2) }
 
 main(x: Int32) = {
-  -square(x) + 20
+  -square(x) + someConst - someConst + someConst
 }
