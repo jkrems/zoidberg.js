@@ -1,6 +1,8 @@
 
-square(x) = { x * 2 }
+mul(a, b) = { a * b }
+
+square(x) = { mul(x, 2) }
 
 main(x: Int32) = {
-  -x * 2 + 20
+  -square(x) + 20
 }
