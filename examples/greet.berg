@@ -1,11 +1,11 @@
 
-someConst = { 20 }
+TWO = { 2 }
 
 mul(a, b) = { a * b }
 
-square(x) = { mul(x, 2) }
+square(x) = { mul(x, TWO) }
 
 main(x: Int32) = {
-  printf("Result: %d", -square(x) + someConst - someConst + someConst);
+  printf("Result: %d", -square(x) + TWO * 10);
   0
 }
