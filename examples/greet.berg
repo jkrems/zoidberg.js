@@ -1,2 +1,2 @@
 
-main(x: Int32) = { x * 2 }
+main(x: Int32) = { -x + 2 }
