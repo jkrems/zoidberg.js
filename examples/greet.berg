@@ -5,7 +5,7 @@ mul(a, b) = { a * b }
 
 square(x) = { mul(x, TWO) }
 
-main(x: Int32) = {
+main(x: Int32): ExitCode = {
   printf("Result: %d", -square(x) + TWO * 10);
   0
 }
