@@ -1,2 +1,6 @@
 
-main(x: Int32) = { -x + 2 }
+square(x) = { x * 2 }
+
+main(x: Int32) = {
+  -x * 2 + 20
+}
