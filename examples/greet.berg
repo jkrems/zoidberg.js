@@ -6,9 +6,11 @@ isOne(x) = match x {
   else: false
 }
 
-mul(a, b) = { a * b }
+mul(a, b) =
+  a * b
 
-square(x) = { mul(x, TWO) }
+square(x) =
+  mul(x, TWO)
 
 main(x: Int32): ExitCode = {
   match isOne(x) {
