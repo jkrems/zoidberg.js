@@ -1,22 +1,53 @@
+# A general zoidberg playground
 
+# # Value declaration
+# Value declarations are lazily evaluated...
+#
 TWO = 2
+#
+# ...which means that this is legal but will only be evaluated on first use.
+#
+TEN = TWO * 5
 
+# # Function declaration
+#
 isOne(x) = match x {
   1: true
   else: false
 }
 
+# # Function with multiple arguments
+#
 mul(a, b) =
   a * b
 
+# # Function calling another function
+#
 square(x) =
-  mul(x, TWO)
+  mul(x, x)
 
+# # main
+# `main` is the entry point of the program. Every module that defines a
+# `main` function will call `main` when invoked directly.
+#
+# In node.js pseudo code:
+#
+#     if (require.main === module)
+#       process.exit(main(process.argv))
+#
 main(x: Int32): ExitCode = {
   match isOne(x) {
     true: printf("Was called with `1`")
     false: printf("Wasn't called with `1` but with `%d`", x)
-  };
-  printf("Result: %d", -square(x) + TWO * 10);
+  }
+
+  # `;` separate elements in a list expression
+  # List expressions are "I don't care about concurrency, I just want
+  # to return the last expression".
+  # A function body might either contain one expression or a list
+  # expression wrapped in curlies.
+  ;
+
+  printf("Result of -square(x) + 20: %d", -square(x) + TWO * TEN);
   0
 }
