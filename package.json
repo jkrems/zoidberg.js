@@ -9,6 +9,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "debug": "^1.0.4"
+    "debug": "^1.0.4",
+    "lodash": "^2.4.1"
+  },
+  "devDependencies": {
+    "assertive": "^1.4.0",
+    "coffee-script": "^1.8.0",
+    "mocha": "^1.21.4"
   }
 }
