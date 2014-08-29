@@ -2,6 +2,7 @@ assert = require 'assertive'
 
 Parser = require '../../lib/parser'
 ZB = require '../../lib/ast'
+Types = require '../../lib/types'
 infer = require '../../lib/inference'
 
 describe 'inference', ->
@@ -15,3 +16,10 @@ describe 'inference', ->
 
       it 'can infer the type of x', ->
         typed = infer @ast
+        firstLine = @ast.body[0]
+        assert.equal Types['String'], firstLine.dataType
+
+      it 'can infer as verified by hasType', ->
+        typed = infer @ast
+        firstLine = @ast.body[0]
+        assert.truthy 'hasType(String)', Types.hasType(firstLine, Types['String'])
