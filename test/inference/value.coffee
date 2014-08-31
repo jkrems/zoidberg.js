@@ -21,12 +21,12 @@ describe 'inference', ->
 
       it 'can infer the type of x', ->
         typed = infer @ast
-        firstLine = @ast.body[0]
+        [firstLine] = @ast.body
         assert.equal StringType, firstLine.dataType
 
       it 'can infer as verified by hasType', ->
         typed = infer @ast
-        firstLine = @ast.body[0]
+        [firstLine] = @ast.body
         assert.truthy 'hasType(String)', hasType(firstLine, StringType)
 
   describe 'function', ->
@@ -37,7 +37,7 @@ describe 'inference', ->
 
         it 'can infer the type of f', ->
           typed = infer @ast
-          firstLine = @ast.body[0]
+          [firstLine] = @ast.body
           someType = new TypeVariable()
           assert.truthy 'hasType( (a) -> a )', hasType(
             firstLine,
@@ -50,7 +50,7 @@ describe 'inference', ->
 
         it 'can infer the type of f', ->
           typed = infer @ast
-          firstLine = @ast.body[0]
+          [firstLine] = @ast.body
           assert.truthy 'hasType( (String) -> String )', hasType(
             firstLine,
             new FunctionType([StringType], StringType)
@@ -62,45 +62,52 @@ describe 'inference', ->
 
         it 'can infer the type of f', ->
           typed = infer @ast
-          firstLine = @ast.body[0]
+          [firstLine] = @ast.body
           assert.truthy 'hasType( (String) -> String )', hasType(
             firstLine,
             new FunctionType([StringType], StringType)
           )
 
-      xdescribe 'identity function with verbose types', ->
+      describe 'identity function with verbose types', ->
         beforeEach ->
           @ast = Parser.parse 'f(x: String): String = x'
 
         it 'can infer the type of f', ->
           typed = infer @ast
-          firstLine = @ast.body[0]
+          [firstLine] = @ast.body
           assert.truthy 'hasType( (String) -> String )', hasType(
             firstLine,
             new FunctionType([StringType], StringType)
           )
 
-      xdescribe 'identity function with wrong types', ->
+      describe 'identity function with wrong types', ->
         beforeEach ->
           @ast = Parser.parse 'f(x: String): Int = x'
 
         it 'can not infer the type of f', ->
-          typed = infer @ast
-          firstLine = @ast.body[0]
-          assert.truthy 'hasType( (String) -> String )', hasType(
-            firstLine,
-            new FunctionType([StringType], StringType)
-          )
+          err = assert.throws =>
+            infer @ast
 
-    xdescribe 'add function', ->
+          assert.equal(
+            'Expected expression of type [[Int]], found [[String]]', err.message)
+
+    describe 'add function', ->
       describe 'without type annotations', ->
         beforeEach ->
           @ast = Parser.parse 'f(x, y) = x + y'
 
         it 'can infer the type of f', ->
           typed = infer @ast
-          console.log typed
+          [firstLine] = @ast.body
+          xType = new TypeVariable()
+          yType = new TypeVariable()
+          addedType = new TypeVariable()
+          assert.truthy 'hasType( (a, b) -> c )', hasType(
+            firstLine,
+            new FunctionType([xType, yType], addedType)
+          )
 
-        it 'can infer the type of x', ->
+        xit 'can infer the type of x', ->
           typed = infer @ast
-          console.log typed
+          [firstLine] = @ast.body
+          console.log firstLine
