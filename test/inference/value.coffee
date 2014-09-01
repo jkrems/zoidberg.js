@@ -40,14 +40,14 @@ describe 'inference', ->
 
     describe 'attempt to assign int to string', ->
       beforeEach ->
-        @ast = Parser.parse 'x: String = 10'
+        @ast = Parser.parse 'x: Int = "foo"'
 
       it 'fails with meaningful error', ->
         err = assert.throws =>
           infer @ast
 
         assert.equal(
-          'Expected expression of type [[String]], found [[Int]]', err.message)
+          '#String and #Int are not compatible', err.message)
 
   describe 'function', ->
     describe 'identity function', ->
@@ -76,7 +76,7 @@ describe 'inference', ->
             new FunctionType([StringType], StringType)
           )
 
-      xdescribe 'identity function with return type', ->
+      describe 'identity function with return type', ->
         beforeEach ->
           @ast = Parser.parse 'f(x): String = x'
 
@@ -109,7 +109,7 @@ describe 'inference', ->
             infer @ast
 
           assert.equal(
-            'Expected expression of type [[Int]], found [[String]]', err.message)
+            '#String and #Int are not compatible', err.message)
 
     describe 'add function', ->
       describe 'without type annotations', ->
