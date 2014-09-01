@@ -29,6 +29,26 @@ describe 'inference', ->
         [firstLine] = @ast.body
         assert.truthy 'hasType(String)', hasType(firstLine, StringType)
 
+    describe 'explicitly types string', ->
+      beforeEach ->
+        @ast = Parser.parse 'x: String = "foo"'
+
+      it 'can infer the type of x', ->
+        typed = infer @ast
+        [firstLine] = @ast.body
+        assert.equal StringType, firstLine.dataType
+
+    describe 'attempt to assign int to string', ->
+      beforeEach ->
+        @ast = Parser.parse 'x: String = 10'
+
+      it 'fails with meaningful error', ->
+        err = assert.throws =>
+          infer @ast
+
+        assert.equal(
+          'Expected expression of type [[String]], found [[Int]]', err.message)
+
   describe 'function', ->
     describe 'identity function', ->
       describe 'without type annotations', ->
