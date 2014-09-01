@@ -6,6 +6,7 @@ Parser = require '../../lib/parser'
   StringType
   FunctionType
   TypeVariable
+  ArrayType
 } = require '../../lib/types'
 infer = require '../../lib/inference'
 
@@ -70,6 +71,32 @@ describe 'inference:function', ->
 
         assert.equal(
           '#String and #Int are not compatible', err.message)
+
+  describe 'wrap in array function', ->
+    describe 'without type annotations', ->
+      beforeEach ->
+        @ast = Parser.parse 'f(x) = [x]'
+
+      it 'can infer the type of f', ->
+        typed = infer @ast
+        [firstLine] = @ast.body
+        xType = new TypeVariable()
+        assert.truthy 'hasType( (a) -> [a] )', hasType(
+          firstLine,
+          new FunctionType([xType], new ArrayType(xType))
+        )
+
+    describe 'with type annotations', ->
+      beforeEach ->
+        @ast = Parser.parse 'f(x: String) = [x]'
+
+      it 'can infer the type of f', ->
+        typed = infer @ast
+        [firstLine] = @ast.body
+        assert.truthy 'hasType( (a) -> [a] )', hasType(
+          firstLine,
+          new FunctionType([StringType], new ArrayType(StringType))
+        )
 
   describe 'add function', ->
     describe 'without type annotations', ->
