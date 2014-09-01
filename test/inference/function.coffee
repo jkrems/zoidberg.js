@@ -81,13 +81,21 @@ describe 'inference:function', ->
         [firstLine] = @ast.body
         xType = new TypeVariable()
         yType = new TypeVariable()
-        addedType = new TypeVariable()
-        assert.truthy 'hasType( (a, b) -> c )', hasType(
+        assert.truthy 'hasType( (a, b) -> a )', hasType(
           firstLine,
-          new FunctionType([xType, yType], addedType)
+          new FunctionType([xType, yType], xType)
         )
 
-      xit 'can infer the type of x', ->
+    describe 'with x and y using same type variable', ->
+      beforeEach ->
+        @ast = Parser.parse 'f(x: a, y: a) = x + y'
+
+      it 'can infer the type of f', ->
         typed = infer @ast
         [firstLine] = @ast.body
-        console.log firstLine
+        inType = new TypeVariable()
+        addedType = new TypeVariable()
+        assert.truthy 'hasType( (a, a) -> b )', hasType(
+          firstLine,
+          new FunctionType([inType, inType], addedType)
+        )
