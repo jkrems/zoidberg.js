@@ -35,7 +35,7 @@ square(x) =
 #     if (require.main === module)
 #       process.exit(main(process.argv))
 #
-main(x: Int32): ExitCode = {
+main(x: Int): Int = {
   match isOne(x) {
     true: printf("Was called with `1`")
     false: printf("Wasn't called with %j but with %j", 1, x)
