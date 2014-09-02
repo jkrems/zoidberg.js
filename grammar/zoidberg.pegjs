@@ -305,8 +305,15 @@ ValueExpression
 FCallExpression
   = ValueExpression
 
+UnaryOp = [+!~-]
 UnaryExpression
-  = FCallExpression
+  = op:(UnaryOp)? _ right:FCallExpression {
+    if (op) {
+      return new ZB.UnaryExpression(getLocation(), op, right);
+    } else {
+      return right;
+    }
+  }
 
 MulOperator = [*/%]
 MulExpression

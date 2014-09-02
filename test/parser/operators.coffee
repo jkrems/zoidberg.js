@@ -45,6 +45,21 @@ describe 'parser:operators', ->
       assert.equal 10, expr.left.value
       assert.equal 5, expr.right.value
 
+  describe 'unary operator / x = 2 * -4', ->
+    before ->
+      @ast = Parser.parse 'x = 2 * -4'
+
+    it 'creates a body with binary & unary expressions', ->
+      [ { body: expr } ] = @ast.body
+      # Expected tree: (* 2 (- 4))
+      assert.equal '*', expr.operator
+      assert.equal 2, expr.left.value
+
+      expr = expr.right
+      assert.truthy 'instanceof UnaryExpression', expr instanceof ZB.UnaryExpression
+      assert.equal '-', expr.operator
+      assert.equal 4, expr.right.value
+
   describe 'operator precedence', ->
     before ->
       @ast = Parser.parse 'x = 2 + 3 * 4'
