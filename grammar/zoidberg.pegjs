@@ -7,23 +7,14 @@
   var Types = require('./types');
 
   function buildTree(first, rest, builder) {
-    var result = first, i;
-
-    for (i = 0; i < rest.length; i++) {
-      result = builder(result, rest[i]);
-    }
-
-    return result;
+    return rest.reduce(builder, first);
   }
 
   function buildBinaryExpression(first, rest) {
-    return buildTree(first, rest, function(result, element) {
-      return {
-        type:     "BinaryExpression",
-        operator: element[1],
-        left:     result,
-        right:    element[3]
-      };
+    return buildTree(first, rest, function(left, element) {
+      var operator = element[1];
+      var right = element[3];
+      return new ZB.BinaryExpression(getLocation(), operator, left, right);
     });
   }
 
@@ -289,8 +280,16 @@ TypeHint
 IdentifierExpression
   = name:Identifier { return new ZB.IdentifierExpression(getLocation(), name); }
 
+ArrayItems
+  = first:ListExpressionItem rest:(__ "," __ ListExpressionItem)* {
+    return buildList(first, rest, 3);
+  }
+
 ArrayExpression
-  = "TODO_ARRAY"
+  = "[" __ items:(ArrayItems)? __ "]" {
+    if (!Array.isArray(items)) items = [];
+    return new ZB.ArrayExpression(getLocation(), items);
+  }
 
 ValueExpression
   = ArrayExpression
@@ -298,8 +297,21 @@ ValueExpression
   / IdentifierExpression
 //  / ParenExpression
 
-ExpressionBlock
+MulExpression
   = ValueExpression
+
+AddOperator = [+-]
+
+AddExpression
+  = first:MulExpression rest:(__ AddOperator __ MulExpression)* {
+    return buildBinaryExpression(first, rest);
+  }
+
+ListExpressionItem
+  = AddExpression
+
+ExpressionBlock
+  = AddExpression
 
 Parameter
   = name:Identifier dataType:(_ TypeHint)? {

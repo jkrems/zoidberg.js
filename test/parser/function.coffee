@@ -42,7 +42,7 @@ describe 'parser:function', ->
 
   describe 'typed add', ->
     before ->
-      @ast = Parser.parse 'f(x: Int, y: String): String = y'
+      @ast = Parser.parse 'f(x: Int, y: String): Int = x + y'
 
     it 'creates top-level Program node', ->
       assert.truthy @ast instanceof ZB.Program
@@ -52,8 +52,5 @@ describe 'parser:function', ->
       assert.truthy 'instanceof FunctionDeclaration', @ast.body[0] instanceof ZB.FunctionDeclaration
 
     it 'has the expected value', ->
-      assert.equal 'y', @ast.body[0].body.name
-
-    it 'has the right type', ->
-      checked = infer @ast
-      assert.truthy hasType(@ast.body[0], new FunctionType([IntType, StringType], StringType))
+      assert.equal 'x', @ast.body[0].body.left.name
+      assert.equal 'y', @ast.body[0].body.right.name
