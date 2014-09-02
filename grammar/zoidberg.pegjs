@@ -297,11 +297,16 @@ ValueExpression
   / IdentifierExpression
 //  / ParenExpression
 
-MulExpression
+UnaryExpression
   = ValueExpression
 
-AddOperator = [+-]
+MulOperator = [*/%]
+MulExpression
+  = first:UnaryExpression rest:(__ MulOperator __ UnaryExpression)* {
+    return buildBinaryExpression(first, rest);
+  }
 
+AddOperator = [+-]
 AddExpression
   = first:MulExpression rest:(__ AddOperator __ MulExpression)* {
     return buildBinaryExpression(first, rest);
