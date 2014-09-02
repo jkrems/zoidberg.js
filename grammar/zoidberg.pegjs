@@ -2,6 +2,7 @@
  * Zoigberg Grammar
  */
 {
+  var _ = require('lodash');
   var ZB = require('./ast');
   var Types = require('./types');
 
@@ -285,12 +286,45 @@ TypeHint
     return new Types.TypeReference(name);
   }
 
+IdentifierExpression
+  = name:Identifier { return new ZB.IdentifierExpression(getLocation(), name); }
+
+ArrayExpression
+  = "TODO_ARRAY"
+
+ValueExpression
+  = ArrayExpression
+  / LiteralExpression
+  / IdentifierExpression
+//  / ParenExpression
+
 ExpressionBlock
-  = LiteralExpression
+  = ValueExpression
+
+Parameter
+  = name:Identifier dataType:(_ TypeHint)? {
+    if (dataType) {
+      dataType = dataType[1];
+    } else {
+      dataType = undefined;
+    }
+    return { name: name, dataType: dataType };
+  }
+
+ParameterList
+  = "(" _ ")" { return []; }
+  / "(" first:Parameter rest:(_ "," _ Parameter)* ")" {
+    return buildList(first, rest, 3);
+  }
 
 Declaration
-  = name:Identifier _ returnType:(TypeHint)? _ "=" __ body:ExpressionBlock {
-    return new ZB.ValueDeclaration(getLocation(), name, body, returnType);
+  = name:Identifier _ params:(ParameterList)? _ returnType:(TypeHint)? _ "=" __ body:ExpressionBlock {
+    if (params) {
+      return new ZB.FunctionDeclaration(getLocation(), name, _.pluck(params, 'name'), body,
+        new Types.FunctionType(_.pluck(params, 'dataType'), returnType));
+    } else {
+      return new ZB.ValueDeclaration(getLocation(), name, body, returnType);
+    }
   }
 
 Declarations
