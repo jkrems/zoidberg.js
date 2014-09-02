@@ -291,11 +291,14 @@ ArrayExpression
     return new ZB.ArrayExpression(getLocation(), items);
   }
 
+ParenExpression
+  = "(" __ expr:Expression __  ")" { return expr; }
+
 ValueExpression
   = ArrayExpression
   / LiteralExpression
   / IdentifierExpression
-//  / ParenExpression
+  / ParenExpression
 
 UnaryExpression
   = ValueExpression
@@ -315,8 +318,15 @@ AddExpression
 ListExpressionItem
   = AddExpression
 
+ListExpression
+  = ListExpressionItem
+
+Expression
+  = ListExpression
+
 ExpressionBlock
-  = AddExpression
+  = "{" __ expr:ListExpression __ "}" { return expr; }
+  / ListExpressionItem
 
 Parameter
   = name:Identifier dataType:(_ TypeHint)? {
