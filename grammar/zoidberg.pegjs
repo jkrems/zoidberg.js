@@ -118,7 +118,7 @@ Integer
   / $([1-9] DecimalDigit*)
 
 String
-  = "\"" data:(StringBody*) "\"" {
+  = "\"" data:(StringBody / "'")* "\"" {
     return data.join('');
   }
 
@@ -302,8 +302,23 @@ ValueExpression
   / IdentifierExpression
   / ParenExpression
 
+FCallArgument
+  = ListExpressionItem
+
+FCallArguments
+  = "(" _ ")" { return []; }
+  / "(" __ first:FCallArgument rest:(__ "," __ FCallArgument)* __ ")" {
+    return buildList(first, rest, 3);
+  }
+
 FCallExpression
-  = ValueExpression
+  = expr:ValueExpression args:(_ FCallArguments)? {
+    if (args) {
+      return new ZB.FCallExpression(getLocation(), expr, args[1]);
+    } else {
+      return expr;
+    }
+  }
 
 UnaryOp = [+!~-]
 UnaryExpression
@@ -362,7 +377,12 @@ ListExpressionItem
   / AddExpression
 
 ListExpression
-  = ListExpressionItem
+  = first:ListExpressionItem rest:(__ ";" __ ListExpressionItem)* {
+    var body = buildList(first, rest, 3);
+    if (body.length === 1) return body[0];
+
+    return new ZB.ListExpression(getLocation(), body);
+  }
 
 Expression
   = ListExpression

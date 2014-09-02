@@ -38,7 +38,7 @@ square(x) =
 main(x: Int32): ExitCode = {
   match isOne(x) {
     true: printf("Was called with `1`")
-    false: printf("Wasn't called with `1` but with `%d`", x)
+    false: printf("Wasn't called with %j but with %j", 1, x)
   }
 
   # `;` separate elements in a list expression
