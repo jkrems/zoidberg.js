@@ -2,6 +2,9 @@
  * Zoigberg Grammar
  */
 {
+  var ZB = require('./ast');
+  var Types = require('./types');
+
   function buildTree(first, rest, builder) {
     var result = first, i;
 
@@ -43,6 +46,21 @@
 
   function optionalList(value) {
     return value !== null ? value : [];
+  }
+
+  function getLocation() {
+    return {
+      source: text(),
+      offset: offset(),
+      start: {
+        line: line(),
+        column: column()
+      },
+      end: {
+        line: line(),
+        column: column()
+      }
+    };
   }
 }
 
@@ -98,11 +116,23 @@ Identifier
 
 IdentifierName "identifier"
   = first:IdentifierStart rest:IdentifierPart* {
-      return {
-        type: "Identifier",
-        name: first + rest.join("")
-      };
+      return first + rest.join("");
     }
+
+DecimalDigit = [0-9]
+
+Integer
+  = "0"
+  / $([1-9] DecimalDigit*)
+
+String
+  = "\"" data:(StringBody*) "\"" {
+    return data.join('');
+  }
+
+StringBody
+  = [^"'\\#]
+  / "\\" c:. { return c; }
 
 UnicodeLetter
   = Lu
@@ -203,129 +233,67 @@ Pc = [\u005F\u203F-\u2040\u2054\uFE33-\uFE34\uFE4D-\uFE4F\uFF3F]
 Zs = [\u0020\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000]
 
 /* word/identifier tokens */
-DefToken = "def" !IdentifierPart
-DeleteToken = "delete" !IdentifierPart
-VoidToken = "void" !IdentifierPart
-TypeofToken = "typeof" !IdentifierPart
+MatchToken = "match" !IdentifierPart
 
 ReservedWord
   = Keyword
 
 Keyword
-  = DefToken
-  = DeleteToken
-  = TypeofToken
-  = VoidToken
+  = MatchToken
 
 Program
-  = Declarations
+  = body:Declarations {
+    return new ZB.Program(getLocation(), body);
+  }
 
-Declarations
-  = "f"
+IntegerLiteral
+  = i:Integer {
+    return {
+      value: parseInt(i, 10),
+      dataType: Types.IntType
+    };
+  }
 
-Declarations2
-  = first:Declaration rest:(__ Declaration)* {
-      return buildList(first, rest, 1);
-    }
+StringLiteral
+  = str:String {
+    return {
+      value: str,
+      dataType: Types.StringType
+    };
+  }
+
+BooleanLiteral
+  = b:("true" / "false") {
+    return {
+      value: b === 'true',
+      dataType: Types.BoolType
+    };
+  }
+
+Literal
+  = StringLiteral
+  / IntegerLiteral
+  / BooleanLiteral
+
+LiteralExpression
+  = l:Literal {
+    return new ZB.LiteralExpression(getLocation(), l.value, l.dataType);
+  }
+
+TypeHint
+  = ":" _ name:Identifier {
+    return new Types.TypeReference(name);
+  }
+
+ExpressionBlock
+  = LiteralExpression
 
 Declaration
-  = Identifier
+  = name:Identifier _ returnType:(TypeHint)? _ "=" __ body:ExpressionBlock {
+    return new ZB.ValueDeclaration(getLocation(), name, body, returnType);
+  }
 
-Declaration2
-  = FunctionDeclaration
-//  / ValueDeclaration
-
-FunctionDeclaration
-  = name:Identifier /* __
-    "(" __ params:(FormalParameterList __)? ")" __
-    "=" __ body:FunctionBody
-    {
-      return {
-        type: 'Function',
-        id: name,
-        params: optionalList(extractOptional(params, 0)),
-        body: body
-      };
-    } */
-
-FormalParameterList
-  = first:Identifier rest:(__ "," __ Identifier)* {
-      return buildList(first, rest, 3);
-    }
-
-FunctionBody
-  = "{" __ Identifier __ "}"
-
-ValueDeclaration
-  = Identifier __ "=" __ FunctionBody
-
-PrimaryExpression
-  = Identifier
-  / "(" __ expression:Expression __ ")" { return expression; }
-
-PostfixExpression
-  = argument:PrimaryExpression _ operator:PostfixOperator {
-      return {
-        type:     "UpdateExpression",
-        operator: operator,
-        argument: argument,
-        prefix:   false
-      };
-    }
-  / PrimaryExpression
-
-PostfixOperator
-  = "++"
-  / "--"
-
-UnaryExpression
-  = PostfixExpression
-  / operator:UnaryOperator __ argument:UnaryExpression {
-      var type = (operator === "++" || operator === "--")
-        ? "UpdateExpression"
-        : "UnaryExpression";
-
-      return {
-        type:     type,
-        operator: operator,
-        argument: argument,
-        prefix:   true
-      };
-    }
-
-UnaryOperator
-  = $DeleteToken
-  / $VoidToken
-  / $TypeofToken
-  / "++"
-  / "--"
-  / $("+" !"=")
-  / $("-" !"=")
-  / "~"
-  / "!"
-
-MultiplicativeExpression
-  = first:UnaryExpression
-    rest:(__ MultiplicativeOperator __ UnaryExpression)*
-    { return buildBinaryExpression(first, rest); }
-
-MultiplicativeOperator
-  = $("*" !"=")
-  / $("/" !"=")
-  / $("%" !"=")
-
-AdditiveExpression
-  = first:MultiplicativeExpression
-    rest:(__ AdditiveOperator __ MultiplicativeExpression)*
-    { return buildBinaryExpression(first, rest); }
-
-AdditiveOperator
-  = $("+" ![+=])
-  / $("-" ![-=])
-
-Expression
-  = first:AdditiveExpression rest:(__ "," __ AdditiveExpression)* {
-      return rest.length > 0
-        ? { type: "SequenceExpression", expressions: buildList(first, rest, 3) }
-        : first;
-    }
+Declarations
+  = first:Declaration rest:(__ Declaration)* {
+    return buildList(first, rest, 1);
+  }
