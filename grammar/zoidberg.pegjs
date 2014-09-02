@@ -226,12 +226,14 @@ Zs = [\u0020\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000]
 
 /* word/identifier tokens */
 MatchToken = "match" !IdentifierPart
+ElseToken = "else" !IdentifierPart
 
 ReservedWord
   = Keyword
 
 Keyword
   = MatchToken
+  / ElseToken
 
 Program
   = body:Declarations {
@@ -300,8 +302,11 @@ ValueExpression
   / IdentifierExpression
   / ParenExpression
 
-UnaryExpression
+FCallExpression
   = ValueExpression
+
+UnaryExpression
+  = FCallExpression
 
 MulOperator = [*/%]
 MulExpression
@@ -315,8 +320,39 @@ AddExpression
     return buildBinaryExpression(first, rest);
   }
 
+MatchElseCondition
+  = ElseToken _ ":" {
+    return new ZB.LiteralExpression(getLocation(), true, Types.BoolType);
+  }
+
+MatchValueCondition
+  = right:UnaryExpression _ ":" {
+    var left = new ZB.IdentifierExpression(getLocation(), 'matchTarget$$');
+    return new ZB.BinaryExpression(getLocation(), '==', left, right);
+  }
+
+MatchCondition
+  = MatchElseCondition
+  / MatchValueCondition
+
+MatchCase
+  = condition:MatchCondition _ body:ExpressionBlock {
+    return new ZB.MatchCase(getLocation(), condition, body);
+  }
+
+MatchCases
+  = first:MatchCase rest:(__ MatchCase)* {
+    return buildList(first, rest, 1);
+  }
+
+MatchExpression
+  = MatchToken __ target:(UnaryExpression)? __ "{" __ cases:MatchCases __ "}" {
+    return new ZB.MatchExpression(getLocation(), target, cases);
+  }
+
 ListExpressionItem
-  = AddExpression
+  = MatchExpression
+  / AddExpression
 
 ListExpression
   = ListExpressionItem
