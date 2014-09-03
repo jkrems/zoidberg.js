@@ -227,6 +227,7 @@ Zs = [\u0020\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000]
 /* word/identifier tokens */
 MatchToken = "match" !IdentifierPart
 ElseToken = "else" !IdentifierPart
+TypeToken = "type" !IdentifierPart
 
 ReservedWord
   = Keyword
@@ -234,6 +235,7 @@ ReservedWord
 Keyword
   = MatchToken
   / ElseToken
+  / TypeToken
 
 Program
   = body:Declarations {
@@ -407,7 +409,29 @@ ParameterList
     return buildList(first, rest, 3);
   }
 
-Declaration
+TypeConstructor
+  = name:Identifier params:(_ ParameterList)? {
+    params = params ? params[1] : [];
+    return { name: name, params: params };
+  }
+
+TypeConstructors
+  = first:TypeConstructor rest:(__ "," __ TypeConstructor)* {
+    return buildList(first, rest, 3);
+  }
+
+TypeDefinition
+  = TypeToken __ "{" __ ctors:TypeConstructors __ "}" {
+    return new ZB.TypeDefinition(getLocation(), ctors);
+  }
+
+TypeDeclaration
+  = name:Identifier _ params:(ParameterList)? _ "=" __ body:TypeDefinition {
+    params = params || [];
+    return new ZB.TypeDeclaration(getLocation(), name, params, body);
+  }
+
+ValueDeclaration
   = name:Identifier _ params:(ParameterList)? _ returnType:(TypeHint)? _ "=" __ body:ExpressionBlock {
     if (params) {
       return new ZB.FunctionDeclaration(getLocation(), name, _.pluck(params, 'name'), body,
@@ -416,6 +440,10 @@ Declaration
       return new ZB.ValueDeclaration(getLocation(), name, body, returnType);
     }
   }
+
+Declaration
+  = TypeDeclaration
+  / ValueDeclaration
 
 Declarations
   = first:Declaration rest:(__ Declaration)* {
