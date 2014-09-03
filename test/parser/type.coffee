@@ -20,9 +20,28 @@ ZB = require '../../lib/ast'
 # # `class` - structs with attributes and optional methods
 # Position = class(x: Float, y: Float)
 # Request = class(method: String, url: String) {
-#   toString() = "[Request " + @method + " " + @url + "]"
+#   toString() = "[Request " + method + " " + url + "]"
+# }
+# LinesStream = class(separator: String) extends Transform {
+#   # Private state, `:=` is mutable assignment
+#   _buffer := ""
+#   _sepLen = seperator.length
 #
-#   toString() = `[Request ${@method} ${@url}]`
+#   # Private method, returns rest
+#   _pushLines(str: String) =
+#     match str.indexOf(separator) {
+#       -1  => str
+#       idx => {
+#         # `push` is part of the base class
+#         push(str.substr(0, idx));
+#         _pushLines(str.substr(idx + _sepLen))
+#       }
+#     }
+#
+#   _transform(chunk, done) = {
+#     _buffer := _pushLines(_buffer ++ chunk.toString("utf8"));
+#     done()
+#   }
 # }
 describe 'parser:type', ->
   xdescribe 'Boolean', ->
