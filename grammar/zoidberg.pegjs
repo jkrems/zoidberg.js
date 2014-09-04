@@ -227,7 +227,7 @@ Zs = [\u0020\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000]
 /* word/identifier tokens */
 MatchToken = "match" !IdentifierPart
 ElseToken = "else" !IdentifierPart
-TypeToken = "type" !IdentifierPart
+EnumToken = "enum" !IdentifierPart
 
 ReservedWord
   = Keyword
@@ -235,7 +235,7 @@ ReservedWord
 Keyword
   = MatchToken
   / ElseToken
-  / TypeToken
+  / EnumToken
 
 Program
   = body:Declarations {
@@ -322,9 +322,25 @@ FCallExpression
     }
   }
 
+MemberAccessExpression
+  = first:FCallExpression accessPath:(__ "->" __ Identifier / __ "." __ Identifier / __ "[" __ ListExpressionItem __ "]")* {
+    return accessPath.reduce(function(rootNode, item) {
+      var operator = item[1], field = item[3];
+      switch (operator) {
+        case '->':
+        case '.':
+          return new ZB.MemberAccessExpression(getLocation(), operator, rootNode, field);
+
+        case '[':
+          return new ZB.ArrayAccessExpression(getLocation(), rootNode, field);
+      }
+      return rootNode;
+    }, first);
+  }
+
 UnaryOp = [+!~-]
 UnaryExpression
-  = op:(UnaryOp)? _ right:FCallExpression {
+  = op:(UnaryOp)? _ right:MemberAccessExpression {
     if (op) {
       return new ZB.UnaryExpression(getLocation(), op, right);
     } else {
@@ -409,24 +425,29 @@ ParameterList
     return buildList(first, rest, 3);
   }
 
-TypeConstructor
+EnumConstructor
   = name:Identifier params:(_ ParameterList)? {
     params = params ? params[1] : [];
-    return { name: name, params: params };
+    if (params.length === 0) {
+      return new ZB.ValueDeclaration(getLocation(), name, /* body = */ null, /* dataType = */ undefined);
+    } else {
+      return new ZB.FunctionDeclaration(getLocation(), name, _.pluck(params, 'name'), /* body = */ null,
+          new Types.FunctionType(_.pluck(params, 'dataType'), /* returnType = */ undefined));
+    }
   }
 
-TypeConstructors
-  = first:TypeConstructor rest:(__ "," __ TypeConstructor)* {
+EnumConstructors
+  = first:EnumConstructor rest:(__ "," __ EnumConstructor)* {
     return buildList(first, rest, 3);
   }
 
-TypeDefinition
-  = TypeToken __ "{" __ ctors:TypeConstructors __ "}" {
-    return new ZB.TypeDefinition(getLocation(), ctors);
+TypeSpecification
+  = EnumToken __ "{" __ ctors:EnumConstructors __ "}" {
+    return new ZB.EnumExpression(getLocation(), ctors);
   }
 
 TypeDeclaration
-  = name:Identifier _ params:(ParameterList)? _ "=" __ body:TypeDefinition {
+  = name:Identifier _ params:(ParameterList)? _ "=" __ body:TypeSpecification {
     params = params || [];
     return new ZB.TypeDeclaration(getLocation(), name, params, body);
   }

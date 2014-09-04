@@ -1,14 +1,16 @@
 assert = require 'assertive'
 
+{pluck} = require 'lodash'
+
 Parser = require '../../lib/peg-parser'
 ZB = require '../../lib/ast'
 
 # Type declarations generally look like value/function declarations.
 # Examples:
 #
-# # `type` - ADT with given constructors
-# Boolean = type { True, False }
-# Optional(a) = type { Just(value: a), Null }
+# # `enum` - ADT with given constructors
+# Boolean = enum { True, False }
+# Optional(a) = enum { Just(value: a), Null }
 #
 # # `alias` - Type unions and simple typedefs
 # Shape = alias { Rectangle, Sphere }
@@ -46,7 +48,7 @@ ZB = require '../../lib/ast'
 describe 'parser:type', ->
   describe 'Boolean', ->
     before ->
-      @ast = Parser.parse 'Boolean = type { True, False }'
+      @ast = Parser.parse 'Boolean = enum { True, False }'
 
     it 'creates top-level Program node', ->
       assert.truthy @ast instanceof ZB.Program
@@ -57,12 +59,12 @@ describe 'parser:type', ->
 
     it 'has two constructors', ->
       def = @ast.body[0].body
-      assert.truthy 'instanceof TypeDefinition', def instanceof ZB.TypeDefinition
+      assert.truthy 'instanceof EnumExpression', def instanceof ZB.EnumExpression
       assert.equal 2, def.constructors.length
 
   describe 'Optional(a)', ->
     before ->
-      @ast = Parser.parse 'Optional(a) = type { Just(value: a), Null }'
+      @ast = Parser.parse 'Optional(a) = enum { Just(value: a), Null }'
 
     it 'creates top-level Program node', ->
       assert.truthy @ast instanceof ZB.Program
@@ -73,24 +75,23 @@ describe 'parser:type', ->
 
     it 'has two constructors', ->
       def = @ast.body[0].body
-      assert.truthy 'instanceof TypeDefinition', def instanceof ZB.TypeDefinition
+      assert.truthy 'instanceof EnumExpression', def instanceof ZB.EnumExpression
       assert.equal 2, def.constructors.length
 
     it 'has a constructor Just that takes one `value` of type `a`', ->
       [Just] = @ast.body[0].body.constructors
       assert.equal 'Just', Just.name
-      assert.equal 1, Just.params.length
-      [param] = Just.params
-      assert.equal 'a', param.dataType.name
+      assert.deepEqual [ 'value' ], Just.params
+      assert.equal 'a', Just.dataType.paramTypes[0].name
 
-    it 'has a constructor Null that has no parameters', ->
+    it 'has a constructor Null that is a value', ->
       [Just, Null] = @ast.body[0].body.constructors
       assert.equal 'Null', Null.name
-      assert.equal 0, Null.params.length
+      assert.truthy 'instanceof ValueDeclaration', Null instanceof ZB.ValueDeclaration
 
   describe 'Tree (recursive)', ->
     before ->
-      @ast = Parser.parse 'Tree(a) = type { Leaf, Node(left: Tree, value: a, right: Tree) }'
+      @ast = Parser.parse 'Tree(a) = enum { Leaf, Node(left: Tree, value: a, right: Tree) }'
 
     it 'creates top-level Program node', ->
       assert.truthy @ast instanceof ZB.Program
@@ -101,19 +102,16 @@ describe 'parser:type', ->
 
     it 'has two constructors', ->
       def = @ast.body[0].body
-      assert.truthy 'instanceof TypeDefinition', def instanceof ZB.TypeDefinition
+      assert.truthy 'instanceof EnumExpression', def instanceof ZB.EnumExpression
       assert.equal 2, def.constructors.length
 
     it 'has a constructor Leaf that has no parameters', ->
       [Leaf, Node] = @ast.body[0].body.constructors
       assert.equal 'Leaf', Leaf.name
-      assert.equal 0, Leaf.params.length
+      assert.truthy 'instanceof ValueDeclaration', Leaf instanceof ZB.ValueDeclaration
 
     it 'has a constructor Node that has three parameters', ->
       [Leaf, Node] = @ast.body[0].body.constructors
       assert.equal 'Node', Node.name
-      assert.equal 3, Node.params.length
-      [left, value, right] = Node.params
-      assert.equal 'Tree', left.dataType.name
-      assert.equal 'a', value.dataType.name
-      assert.equal 'Tree', right.dataType.name
+      assert.deepEqual [ 'left', 'value', 'right' ], Node.params
+      assert.deepEqual [ 'Tree', 'a', 'Tree' ], pluck(Node.dataType.paramTypes, 'name')
