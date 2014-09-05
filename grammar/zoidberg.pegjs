@@ -228,6 +228,8 @@ Zs = [\u0020\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000]
 MatchToken = "match" !IdentifierPart
 ElseToken = "else" !IdentifierPart
 EnumToken = "enum" !IdentifierPart
+TrueToken = "true" !IdentifierPart
+FalseToken = "false" !IdentifierPart
 
 ReservedWord
   = Keyword
@@ -236,6 +238,8 @@ Keyword
   = MatchToken
   / ElseToken
   / EnumToken
+  / TrueToken
+  / FalseToken
 
 Program
   = body:Declarations {
@@ -259,9 +263,9 @@ StringLiteral
   }
 
 BooleanLiteral
-  = b:("true" / "false") {
+  = b:(TrueToken / FalseToken) {
     return {
-      value: b === 'true',
+      value: b[0] === 'true',
       dataType: Types.BoolType
     };
   }
