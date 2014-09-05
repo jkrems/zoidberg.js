@@ -312,24 +312,21 @@ FCallArgument
   = ListExpressionItem
 
 FCallArguments
-  = "(" _ ")" { return []; }
-  / "(" __ first:FCallArgument rest:(__ "," __ FCallArgument)* __ ")" {
+  = first:FCallArgument rest:(__ "," __ FCallArgument)* {
     return buildList(first, rest, 3);
   }
 
-FCallExpression
-  = expr:ValueExpression args:(_ FCallArguments)? {
-    if (args) {
-      return new ZB.FCallExpression(getLocation(), expr, args[1]);
-    } else {
-      return expr;
-    }
-  }
+FCallOrProperty
+  = "->" __ Identifier
+  / "." __ Identifier
+  / "[" __ ListExpressionItem __ "]"
+  / "(" __ FCallArguments? __ ")"
 
-MemberAccessExpression
-  = first:FCallExpression accessPath:(__ "->" __ Identifier / __ "." __ Identifier / __ "[" __ ListExpressionItem __ "]")* {
+FCallOrPropertyExpression
+  = first:ValueExpression accessPath:(__ FCallOrProperty)* {
     return accessPath.reduce(function(rootNode, item) {
-      var operator = item[1], field = item[3];
+      item = item[1]; // skip the whitespace
+      var operator = item[0], field = item[2];
       switch (operator) {
         case '->':
         case '.':
@@ -337,14 +334,19 @@ MemberAccessExpression
 
         case '[':
           return new ZB.ArrayAccessExpression(getLocation(), rootNode, field);
+
+        case '(':
+          return new ZB.FCallExpression(getLocation(), rootNode, field || []);
+
+        default:
+          return error('Unknown operator ' + operator);
       }
-      return rootNode;
     }, first);
   }
 
 UnaryOp = [+!~-]
 UnaryExpression
-  = op:(UnaryOp)? _ right:MemberAccessExpression {
+  = op:(UnaryOp)? _ right:FCallOrPropertyExpression {
     if (op) {
       return new ZB.UnaryExpression(getLocation(), op, right);
     } else {
