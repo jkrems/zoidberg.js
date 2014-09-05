@@ -1,0 +1,10 @@
+# Can be infered as #String
+x = "10"
+
+# Can be infered as \(#Int -> #Int)
+f(n: Int) =
+  2 * n
+
+# Could be infered as \( -> #Int)
+main() =
+  f(x) # trying to pass #String where #Int is expected

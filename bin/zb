@@ -1,0 +1,15 @@
+#!/usr/bin/env node
+'use strict';
+
+var fs = require('fs');
+
+var runMain = require('../lib/evaluate').runMain;
+var parser = require('../lib/parser');
+var infer = require('../lib/inference');
+
+var programFile = process.argv[2];
+var argv = process.argv.slice(0, 2).concat(process.argv.slice(3));
+var source = fs.readFileSync(programFile, 'utf8');
+var parsed = parser.parse(source);
+var checked = infer(parsed);
+process.exit(runMain(checked, argv));
