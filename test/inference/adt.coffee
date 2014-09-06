@@ -5,6 +5,7 @@ Parser = require '../../lib/parser'
 {
   hasType
   StringType
+  IntType
   TypeVariable
   prune
 } = require '../../lib/types'
@@ -14,12 +15,12 @@ describe 'inference:ADT', ->
   describe 'Boolean; x = True', ->
     before ->
       @source = """
-        Boolean = enum { True, False }
-        x = Boolean.True
+        Boolean = enum { True(), False() }
+        x = Boolean.True()
 
         # Simulating a clean impl of the built-in type
-        false_ = Boolean.False
-        true_ = Boolean.True
+        false_ = Boolean.False()
+        true_ = Boolean.True()
 
         y = true_
         """
@@ -39,12 +40,13 @@ describe 'inference:ADT', ->
       {dataType: yType} = _.find @ast.body, { name: 'y' }
       assert.equal 'Boolean', yType.name
 
-  describe 'Tree(t); Leaf', ->
+  describe 'Tree(t); Leaf / Node', ->
     before ->
       @source = """
-        Tree(a) = enum { Leaf, Node(left: Tree, value: a, right: Tree) }
-        l = Tree.Leaf
-        n = Tree.Node(Tree.Leaf, 10, Tree.Leaf)
+        Tree(a) = enum { Leaf(), Node(left: Tree, value: a, right: Tree) }
+        l = Tree.Leaf()
+        n = Tree.Node(Tree.Leaf(), 10, Tree.Leaf())
+        n2 = Tree.Node(Tree.Leaf(), "str", Tree.Leaf())
         """
       @ast = Parser.parse @source
       infer @ast
@@ -52,11 +54,16 @@ describe 'inference:ADT', ->
     it 'can infer the type of l', ->
       {dataType: lType} = _.find @ast.body, { name: 'l' }
       assert.equal 'Tree', lType.name
-      assert.truthy 'instanceof TypeVariable', lType.types[0] instanceof TypeVariable
-      assert.falsey 'is generic', lType.types[0].instance
+      typeParam = prune(lType.types[0])
+      assert.truthy 'instanceof TypeVariable', typeParam instanceof TypeVariable
 
-    xit 'can infer the type of n', ->
+    it 'still leaves Tree as a generic type', ->
+      {dataType: treeMeta} = _.find @ast.body, { name: 'Tree' }
+      assert.equal 'Tree%Meta', treeMeta.name
+
+    it 'can infer the type of n', ->
       {dataType: nType} = _.find @ast.body, { name: 'n' }
       assert.equal 'Tree', nType.name
-      console.log prune(nType.types[0])
-      assert.equal 'Int', nType.types[0].name
+      typeParam = prune(nType.types[0])
+      assert.equal 'Int', typeParam.name
+      assert.truthy 'hasType IntType', hasType({ dataType: typeParam }, IntType)

@@ -432,14 +432,9 @@ ParameterList
   }
 
 EnumConstructor
-  = name:Identifier params:(_ ParameterList)? {
-    params = params ? params[1] : [];
-    if (params.length === 0) {
-      return new ZB.ValueDeclaration(getLocation(), name, /* body = */ null, /* dataType = */ undefined);
-    } else {
-      return new ZB.FunctionDeclaration(getLocation(), name, _.pluck(params, 'name'), /* body = */ null,
-          new Types.FunctionType(_.pluck(params, 'dataType'), /* returnType = */ undefined));
-    }
+  = name:Identifier _ params:ParameterList {
+    return new ZB.FunctionDeclaration(getLocation(), name, _.pluck(params, 'name'), /* body = */ null,
+      new Types.FunctionType(_.pluck(params, 'dataType'), /* returnType = */ undefined));
   }
 
 EnumConstructors

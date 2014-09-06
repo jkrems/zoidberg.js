@@ -48,7 +48,7 @@ ZB = require '../../lib/ast'
 describe 'parser:type', ->
   describe 'Boolean', ->
     before ->
-      @ast = Parser.parse 'Boolean = enum { True, False }'
+      @ast = Parser.parse 'Boolean = enum { True(), False() }'
 
     it 'creates top-level Program node', ->
       assert.truthy @ast instanceof ZB.Program
@@ -64,7 +64,7 @@ describe 'parser:type', ->
 
   describe 'Optional(a)', ->
     before ->
-      @ast = Parser.parse 'Optional(a) = enum { Just(value: a), Null }'
+      @ast = Parser.parse 'Optional(a) = enum { Just(value: a), Null() }'
 
     it 'creates top-level Program node', ->
       assert.truthy @ast instanceof ZB.Program
@@ -87,11 +87,11 @@ describe 'parser:type', ->
     it 'has a constructor Null that is a value', ->
       [Just, Null] = @ast.body[0].body.constructors
       assert.equal 'Null', Null.name
-      assert.truthy 'instanceof ValueDeclaration', Null instanceof ZB.ValueDeclaration
+      assert.deepEqual [], Null.params
 
   describe 'Tree (recursive)', ->
     before ->
-      @ast = Parser.parse 'Tree(a) = enum { Leaf, Node(left: Tree, value: a, right: Tree) }'
+      @ast = Parser.parse 'Tree(a) = enum { Leaf(), Node(left: Tree, value: a, right: Tree) }'
 
     it 'creates top-level Program node', ->
       assert.truthy @ast instanceof ZB.Program
@@ -108,7 +108,7 @@ describe 'parser:type', ->
     it 'has a constructor Leaf that has no parameters', ->
       [Leaf, Node] = @ast.body[0].body.constructors
       assert.equal 'Leaf', Leaf.name
-      assert.truthy 'instanceof ValueDeclaration', Leaf instanceof ZB.ValueDeclaration
+      assert.deepEqual [], Leaf.params
 
     it 'has a constructor Node that has three parameters', ->
       [Leaf, Node] = @ast.body[0].body.constructors
