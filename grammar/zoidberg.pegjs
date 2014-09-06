@@ -227,6 +227,9 @@ Zs = [\u0020\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000]
 /* word/identifier tokens */
 MatchToken = "match" !IdentifierPart
 ElseToken = "else" !IdentifierPart
+EnumToken = "enum" !IdentifierPart
+TrueToken = "true" !IdentifierPart
+FalseToken = "false" !IdentifierPart
 
 ReservedWord
   = Keyword
@@ -234,6 +237,9 @@ ReservedWord
 Keyword
   = MatchToken
   / ElseToken
+  / EnumToken
+  / TrueToken
+  / FalseToken
 
 Program
   = body:Declarations {
@@ -257,9 +263,9 @@ StringLiteral
   }
 
 BooleanLiteral
-  = b:("true" / "false") {
+  = b:(TrueToken / FalseToken) {
     return {
-      value: b === 'true',
+      value: b[0] === 'true',
       dataType: Types.BoolType
     };
   }
@@ -306,23 +312,41 @@ FCallArgument
   = ListExpressionItem
 
 FCallArguments
-  = "(" _ ")" { return []; }
-  / "(" __ first:FCallArgument rest:(__ "," __ FCallArgument)* __ ")" {
+  = first:FCallArgument rest:(__ "," __ FCallArgument)* {
     return buildList(first, rest, 3);
   }
 
-FCallExpression
-  = expr:ValueExpression args:(_ FCallArguments)? {
-    if (args) {
-      return new ZB.FCallExpression(getLocation(), expr, args[1]);
-    } else {
-      return expr;
-    }
+FCallOrProperty
+  = "->" __ Identifier
+  / "." __ Identifier
+  / "[" __ ListExpressionItem __ "]"
+  / "(" __ FCallArguments? __ ")"
+
+FCallOrPropertyExpression
+  = first:ValueExpression accessPath:(__ FCallOrProperty)* {
+    return accessPath.reduce(function(rootNode, item) {
+      item = item[1]; // skip the whitespace
+      var operator = item[0], field = item[2];
+      switch (operator) {
+        case '->':
+        case '.':
+          return new ZB.MemberAccessExpression(getLocation(), operator, rootNode, field);
+
+        case '[':
+          return new ZB.ArrayAccessExpression(getLocation(), rootNode, field);
+
+        case '(':
+          return new ZB.FCallExpression(getLocation(), rootNode, field || []);
+
+        default:
+          return error('Unknown operator ' + operator);
+      }
+    }, first);
   }
 
 UnaryOp = [+!~-]
 UnaryExpression
-  = op:(UnaryOp)? _ right:FCallExpression {
+  = op:(UnaryOp)? _ right:FCallOrPropertyExpression {
     if (op) {
       return new ZB.UnaryExpression(getLocation(), op, right);
     } else {
@@ -407,7 +431,29 @@ ParameterList
     return buildList(first, rest, 3);
   }
 
-Declaration
+EnumConstructor
+  = name:Identifier _ params:ParameterList {
+    return new ZB.FunctionDeclaration(getLocation(), name, _.pluck(params, 'name'), /* body = */ null,
+      new Types.FunctionType(_.pluck(params, 'dataType'), /* returnType = */ undefined));
+  }
+
+EnumConstructors
+  = first:EnumConstructor rest:(__ "," __ EnumConstructor)* {
+    return buildList(first, rest, 3);
+  }
+
+TypeSpecification
+  = EnumToken __ "{" __ ctors:EnumConstructors __ "}" {
+    return new ZB.EnumExpression(getLocation(), ctors);
+  }
+
+TypeDeclaration
+  = name:Identifier _ params:(ParameterList)? _ "=" __ body:TypeSpecification {
+    params = params || [];
+    return new ZB.TypeDeclaration(getLocation(), name, params, body);
+  }
+
+ValueDeclaration
   = name:Identifier _ params:(ParameterList)? _ returnType:(TypeHint)? _ "=" __ body:ExpressionBlock {
     if (params) {
       return new ZB.FunctionDeclaration(getLocation(), name, _.pluck(params, 'name'), body,
@@ -416,6 +462,10 @@ Declaration
       return new ZB.ValueDeclaration(getLocation(), name, body, returnType);
     }
   }
+
+Declaration
+  = TypeDeclaration
+  / ValueDeclaration
 
 Declarations
   = first:Declaration rest:(__ Declaration)* {
