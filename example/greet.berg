@@ -16,6 +16,11 @@ isOne(x) = match x {
   else => false
 }
 
+bindMatch(x) = match x {
+  1 => 42
+  n => 2 * n
+}
+
 # # Function with multiple arguments
 #
 mul(a, b) =
@@ -39,7 +44,9 @@ main(x: Int) = {
   match isOne(x) {
     true => printf("Was called with `1`")
     false => printf("Wasn't called with %j but with %j", 1, x)
-  }
+  };
+
+  printf("bindMatch(x) = %j", bindMatch(x))
 
   # `;` separate elements in a list expression
   # List expressions are "I don't care about concurrency, I just want
