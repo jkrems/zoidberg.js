@@ -11,3 +11,6 @@ lib/parser.js: grammar/zoidberg.pegjs
 
 clean:
 	rm lib/parser.js
+
+example/enum.berg: build
+	./bin/zb $@

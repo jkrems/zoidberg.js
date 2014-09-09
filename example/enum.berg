@@ -10,5 +10,5 @@ myList =
   List.Node(10, List.Node(8, List.Empty()))
 
 main() = {
-  printf("%s", length); 0
+  printf("%j", myList); 0
 }
