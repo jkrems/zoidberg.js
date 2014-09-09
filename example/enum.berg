@@ -1,0 +1,14 @@
+
+List = enum { Empty(), Node(value: Int, next: List) }
+
+length(list: List): Int = match list {
+  List.Node(v, n) => 1 + length(n)
+  List.Empty() => 0
+}
+
+myList =
+  List.Node(10, List.Node(8, List.Empty()))
+
+main() = {
+  printf("%s", length); 0
+}

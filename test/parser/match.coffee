@@ -1,6 +1,6 @@
 assert = require 'assertive'
 
-Parser = require '../../lib/peg-parser'
+Parser = require '../../lib/parser'
 ZB = require '../../lib/ast'
 {
   hasType
@@ -17,8 +17,8 @@ describe 'parser:match', ->
       """
       # Returns true if x is 1 (yes, that's a stupid function)
       isOne(x) = match x {
-        1: true
-        else: false
+        1 => true
+        else => false
       }
       """
 

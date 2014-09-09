@@ -1,16 +1,14 @@
 assert = require 'assertive'
 
 Parser = require '../../lib/parser'
-{
-  hasType
-  StringType
-  FunctionType
-  TypeVariable
-  ArrayType
-} = require '../../lib/types'
+TypeSystem = require '../../lib/types'
 infer = require '../../lib/inference'
 
 describe 'inference:fcall', ->
+  beforeEach ->
+    @types = TypeSystem()
+    {@TypeVariable, @FunctionType, @hasType} = @types
+
   describe 'return value', ->
     describe 'without type annotations', ->
       beforeEach ->
@@ -19,7 +17,7 @@ describe 'inference:fcall', ->
           n = f(10)
           s = f("str")
           """
-        infer @ast
+        infer @ast, @types
         [@fDecl, @nDecl, @sDecl] = @ast.body
 
       it 'properly infers the type of `n`', ->
@@ -29,6 +27,6 @@ describe 'inference:fcall', ->
         assert.equal 'String', @sDecl.dataType.name
 
       it 'keeps f generic', ->
-        argType = new TypeVariable()
-        genericCall = new FunctionType [argType], argType
-        assert.truthy hasType(@fDecl, genericCall)
+        argType = new @TypeVariable()
+        genericCall = @FunctionType.withTypes [argType, argType]
+        assert.truthy @hasType(@fDecl, genericCall)

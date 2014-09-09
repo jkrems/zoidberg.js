@@ -12,8 +12,8 @@ TEN = TWO * 5
 # # Function declaration
 #
 isOne(x) = match x {
-  1: true
-  else: false
+  1 => true
+  else => false
 }
 
 # # Function with multiple arguments
@@ -37,8 +37,8 @@ square(x) =
 #
 main(x: Int) = {
   match isOne(x) {
-    true: printf("Was called with `1`")
-    false: printf("Wasn't called with %j but with %j", 1, x)
+    true => printf("Was called with `1`")
+    false => printf("Wasn't called with %j but with %j", 1, x)
   }
 
   # `;` separate elements in a list expression
