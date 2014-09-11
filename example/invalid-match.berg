@@ -1,0 +1,7 @@
+main() = {
+  match {
+    33 => printf("This should throw")
+    else => printf("not ok")
+  };
+  0
+}
