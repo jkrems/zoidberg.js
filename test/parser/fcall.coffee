@@ -1,6 +1,6 @@
 assert = require 'assertive'
 
-Parser = require '../../lib/peg-parser'
+Parser = require '../../lib/parser'
 ZB = require '../../lib/ast'
 
 describe 'parser:fcall', ->

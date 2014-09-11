@@ -1,0 +1,30 @@
+
+List(t) = enum { Empty(), Node(value: t, next: List(t)) }
+
+length(list: List(Int)) = match list {
+  List.Node(value, next) => 1 + length(next)
+  List.Empty() => 0
+}
+
+intList =
+  List.Node(10, List.Node(8, List.Empty()))
+
+strList =
+  List.Node("a",
+    List.Node("b",
+      List.Node("c",
+        List.Node("d",
+          List.Empty()))))
+
+# This will throw since "a" and 42 are not compatible
+# mixedList =
+#   List.Node("a",
+#     List.Node(42,
+#       List.Empty()))
+
+main() = {
+  printf("Length of %j: %d", intList, length(intList));
+  printf("Length of %j: %d", strList, length(strList));
+  # printf("Length of %j: %d", mixedList, length(mixedList));
+  0
+}

@@ -1,35 +1,31 @@
 assert = require 'assertive'
 
 Parser = require '../../lib/parser'
-{
-  hasType
-  StringType
-} = require '../../lib/types'
+TypeSystem = require '../../lib/types'
 infer = require '../../lib/inference'
 
 describe 'inference:value', ->
+  beforeEach ->
+    @typeSystem = TypeSystem()
+    {@StringType, @hasType} = @typeSystem
+
   describe 'simple string constant', ->
     beforeEach ->
       @ast = Parser.parse 'x = "foo"'
+      infer @ast, @typeSystem
 
     it 'can infer the type of x', ->
-      typed = infer @ast
       [firstLine] = @ast.body
-      assert.equal StringType, firstLine.dataType
-
-    it 'can infer as verified by hasType', ->
-      typed = infer @ast
-      [firstLine] = @ast.body
-      assert.truthy 'hasType(String)', hasType(firstLine, StringType)
+      assert.truthy 'hasType(String)', @hasType(firstLine, @StringType)
 
   describe 'explicitly types string', ->
     beforeEach ->
       @ast = Parser.parse 'x: String = "foo"'
+      infer @ast, @typeSystem
 
     it 'can infer the type of x', ->
-      typed = infer @ast
       [firstLine] = @ast.body
-      assert.equal StringType, firstLine.dataType
+      assert.truthy 'hasType(String)', @hasType(firstLine, @StringType)
 
   describe 'attempt to assign int to string', ->
     beforeEach ->
@@ -40,4 +36,4 @@ describe 'inference:value', ->
         infer @ast
 
       assert.equal(
-        '#String and #Int are not compatible', err.message)
+        '@String and @Int are not compatible', err.message)

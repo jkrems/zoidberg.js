@@ -1,15 +1,7 @@
 assert = require 'assertive'
 
-Parser = require '../../lib/peg-parser'
+Parser = require '../../lib/parser'
 ZB = require '../../lib/ast'
-{
-  hasType
-  FunctionType
-  TypeVariable
-  IntType
-  StringType
-} = require '../../lib/types'
-infer = require '../../lib/inference'
 
 describe 'parser:parens', ->
   describe 'override operator precedence', ->

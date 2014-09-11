@@ -1,7 +1,7 @@
 {
   "name": "zoidberg",
   "version": "0.0.0",
-  "description": "",
+  "description": "[Nothing to see here.](https://github.com/jkrems/zoidberg/blob/master/examples/greet.berg)",
   "main": "lib/zoidberg.js",
   "bin": {
     "zb": "bin/zb"
@@ -9,8 +9,11 @@
   "scripts": {
     "test": "mocha"
   },
-  "author": "",
-  "license": "ISC",
+  "author": {
+    "name": "Jan Krems",
+    "email": "jan.krems@gmail.com"
+  },
+  "license": "MIT",
   "dependencies": {
     "debug": "^1.0.4",
     "lodash": "^2.4.1"
@@ -19,5 +22,23 @@
     "assertive": "^1.4.0",
     "coffee-script": "^1.8.0",
     "mocha": "^1.21.4"
-  }
+  },
+  "directories": {
+    "example": "example",
+    "test": "test",
+    "doc": "doc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/jkrems/zoidberg.git"
+  },
+  "keywords": [
+    "compiler",
+    "type",
+    "inference"
+  ],
+  "bugs": {
+    "url": "https://github.com/jkrems/zoidberg/issues"
+  },
+  "homepage": "https://github.com/jkrems/zoidberg"
 }

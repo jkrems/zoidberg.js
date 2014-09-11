@@ -250,7 +250,7 @@ IntegerLiteral
   = i:Integer {
     return {
       value: parseInt(i, 10),
-      dataType: Types.IntType
+      dataType: new Types.TypeReference('Int')
     };
   }
 
@@ -258,7 +258,7 @@ StringLiteral
   = str:String {
     return {
       value: str,
-      dataType: Types.StringType
+      dataType: new Types.TypeReference('String')
     };
   }
 
@@ -266,7 +266,7 @@ BooleanLiteral
   = b:(TrueToken / FalseToken) {
     return {
       value: b[0] === 'true',
-      dataType: Types.BoolType
+      dataType: new Types.TypeReference('Bool')
     };
   }
 
@@ -280,9 +280,20 @@ LiteralExpression
     return new ZB.LiteralExpression(getLocation(), l.value, l.dataType);
   }
 
+TypeArgument
+  = name:Identifier args:(_ "(" TypeArguments ")")? {
+    types = args ? args[2] : [];
+    return new Types.TypeReference(name, types);
+  }
+
+TypeArguments
+  = first:TypeArgument rest:(__ "," __ TypeArgument)* {
+    return buildList(first, rest, 3);
+  }
+
 TypeHint
-  = ":" _ name:Identifier {
-    return new Types.TypeReference(name);
+  = ":" _ typeRef:TypeArgument {
+    return typeRef;
   }
 
 IdentifierExpression
@@ -367,12 +378,13 @@ AddExpression
   }
 
 MatchElseCondition
-  = ElseToken _ ":" {
-    return new ZB.LiteralExpression(getLocation(), true, Types.BoolType);
+  = ElseToken _ "=>" {
+    return new ZB.LiteralExpression(getLocation(), true,
+      new Types.TypeReference('Bool'));
   }
 
 MatchValueCondition
-  = right:UnaryExpression _ ":" {
+  = right:UnaryExpression _ "=>" {
     var left = new ZB.IdentifierExpression(getLocation(), 'matchTarget$$');
     return new ZB.BinaryExpression(getLocation(), '==', left, right);
   }
@@ -433,8 +445,10 @@ ParameterList
 
 EnumConstructor
   = name:Identifier _ params:ParameterList {
-    return new ZB.FunctionDeclaration(getLocation(), name, _.pluck(params, 'name'), /* body = */ null,
-      new Types.FunctionType(_.pluck(params, 'dataType'), /* returnType = */ undefined));
+    return new ZB.FunctionDeclaration(
+      getLocation(), name, _.pluck(params, 'name'), /* body = */ null,
+      new Types.TypeReference('Function',
+        _.pluck(params, 'dataType').concat([ /* returnType = */ undefined ])));
   }
 
 EnumConstructors
@@ -456,8 +470,10 @@ TypeDeclaration
 ValueDeclaration
   = name:Identifier _ params:(ParameterList)? _ returnType:(TypeHint)? _ "=" __ body:ExpressionBlock {
     if (params) {
-      return new ZB.FunctionDeclaration(getLocation(), name, _.pluck(params, 'name'), body,
-        new Types.FunctionType(_.pluck(params, 'dataType'), returnType));
+      return new ZB.FunctionDeclaration(
+        getLocation(), name, _.pluck(params, 'name'), body,
+        new Types.TypeReference('Function',
+          _.pluck(params, 'dataType').concat([returnType || undefined])));
     } else {
       return new ZB.ValueDeclaration(getLocation(), name, body, returnType);
     }

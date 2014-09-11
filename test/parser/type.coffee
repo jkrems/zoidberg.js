@@ -2,7 +2,7 @@ assert = require 'assertive'
 
 {pluck} = require 'lodash'
 
-Parser = require '../../lib/peg-parser'
+Parser = require '../../lib/parser'
 ZB = require '../../lib/ast'
 
 # Type declarations generally look like value/function declarations.
@@ -47,7 +47,7 @@ ZB = require '../../lib/ast'
 # }
 describe 'parser:type', ->
   describe 'Boolean', ->
-    before ->
+    beforeEach ->
       @ast = Parser.parse 'Boolean = enum { True(), False() }'
 
     it 'creates top-level Program node', ->
@@ -63,7 +63,7 @@ describe 'parser:type', ->
       assert.equal 2, def.constructors.length
 
   describe 'Optional(a)', ->
-    before ->
+    beforeEach ->
       @ast = Parser.parse 'Optional(a) = enum { Just(value: a), Null() }'
 
     it 'creates top-level Program node', ->
@@ -82,7 +82,7 @@ describe 'parser:type', ->
       [Just] = @ast.body[0].body.constructors
       assert.equal 'Just', Just.name
       assert.deepEqual [ 'value' ], Just.params
-      assert.equal 'a', Just.dataType.paramTypes[0].name
+      assert.equal 'a', Just.dataType.types[0].name
 
     it 'has a constructor Null that is a value', ->
       [Just, Null] = @ast.body[0].body.constructors
@@ -90,8 +90,8 @@ describe 'parser:type', ->
       assert.deepEqual [], Null.params
 
   describe 'Tree (recursive)', ->
-    before ->
-      @ast = Parser.parse 'Tree(a) = enum { Leaf(), Node(left: Tree, value: a, right: Tree) }'
+    beforeEach ->
+      @ast = Parser.parse 'Tree(a) = enum { Leaf(), Node(left: Tree(a), value: a, right: Tree(a)) }'
 
     it 'creates top-level Program node', ->
       assert.truthy @ast instanceof ZB.Program
@@ -114,4 +114,4 @@ describe 'parser:type', ->
       [Leaf, Node] = @ast.body[0].body.constructors
       assert.equal 'Node', Node.name
       assert.deepEqual [ 'left', 'value', 'right' ], Node.params
-      assert.deepEqual [ 'Tree', 'a', 'Tree' ], pluck(Node.dataType.paramTypes, 'name')
+      assert.deepEqual [ 'Tree', 'a', 'Tree' ], pluck(Node.dataType.types.slice(0, -1), 'name')
