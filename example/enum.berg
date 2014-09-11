@@ -1,16 +1,23 @@
 
-List = enum { Empty(), Node(value: Int, next: List) }
+List(t) = enum { Empty(), Node(value: t, next: List(t)) }
 
-length(list: List): Int = match list {
+length(list: List(Int)) = match list {
   List.Node(value, next) => 1 + length(next)
   List.Empty() => 0
 }
 
-myList =
+intList =
   List.Node(10, List.Node(8, List.Empty()))
 
+strList =
+  List.Node("a",
+    List.Node("b",
+      List.Node("c",
+        List.Node("d",
+          List.Empty()))))
+
 main() = {
-  printf("List: %j", myList);
-  printf("Length: %j", length(myList));
+  printf("Length of %j: %d", intList, length(intList));
+  printf("Length of %j: %d", strList, length(strList));
   0
 }
