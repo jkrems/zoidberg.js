@@ -14,3 +14,10 @@ clean:
 
 example/enum.berg: build
 	./bin/zb $@
+
+tmp/hello.js: example/hello.berg build
+	./bin/zbc $< >$@
+
+.PHONY: hello
+hello: tmp/hello.js
+	@node tmp/hello.js
