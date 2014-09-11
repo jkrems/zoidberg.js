@@ -1,12 +1,12 @@
 
 default: build
 
-build: lib/parser.js
+build: grammar/zoidberg.js
 
 test: build
 	npm test
 
-lib/parser.js: grammar/zoidberg.pegjs
+grammar/zoidberg.js: grammar/zoidberg.pegjs
 	./node_modules/.bin/pegjs <$< >$@
 
 clean:

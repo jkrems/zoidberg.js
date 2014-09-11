@@ -3,8 +3,8 @@
  */
 {
   var _ = require('lodash');
-  var ZB = require('./ast');
-  var Types = require('./types');
+  var ZB = require('../lib/ast');
+  var Types = require('../lib/types');
 
   function buildTree(first, rest, builder) {
     return rest.reduce(builder, first);
