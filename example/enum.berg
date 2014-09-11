@@ -16,8 +16,15 @@ strList =
         List.Node("d",
           List.Empty()))))
 
+# This will throw since "a" and 42 are not compatible
+# mixedList =
+#   List.Node("a",
+#     List.Node(42,
+#       List.Empty()))
+
 main() = {
   printf("Length of %j: %d", intList, length(intList));
   printf("Length of %j: %d", strList, length(strList));
+  # printf("Length of %j: %d", mixedList, length(mixedList));
   0
 }
