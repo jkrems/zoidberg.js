@@ -4,7 +4,8 @@
   "description": "[Nothing to see here.](https://github.com/jkrems/zoidberg/blob/master/examples/greet.berg)",
   "main": "lib/zoidberg.js",
   "bin": {
-    "zb": "bin/zb"
+    "zb": "bin/zb",
+    "zbc": "bin/zbc"
   },
   "scripts": {
     "test": "mocha && jshint lib"
@@ -16,6 +17,7 @@
   "license": "MIT",
   "dependencies": {
     "debug": "^1.0.4",
+    "escodegen": "^1.4.1",
     "lodash": "^2.4.1"
   },
   "devDependencies": {

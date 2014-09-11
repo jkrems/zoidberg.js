@@ -7,6 +7,6 @@ var programFile = process.argv[2];
 var source = fs.readFileSync(programFile, 'utf8');
 
 var zoidberg = require('../');
-zoidberg.runMain(source, {
+process.stdout.write(zoidberg.compile(source, {
   filename: programFile
-});
+}).code + '\n');
