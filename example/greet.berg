@@ -41,9 +41,9 @@ square(x) =
 #       process.exit(main(process.argv))
 #
 main(x: Int) = {
-  match isOne(x) {
-    true => printf("Was called with `1`")
-    false => printf("Wasn't called with %j but with %j", 1, x)
+  match {
+    isOne(x) => printf("Was called with `1`")
+    else => printf("Wasn't called with %j but with %j", 1, x)
   };
 
   printf("bindMatch(x) = %j", bindMatch(x))
