@@ -16,5 +16,5 @@ describe 'match adt', ->
     }
     """
 
-  xit 'prints hello world', ->
+  it 'finds out the length of the list', ->
     assert.equal 'Length: 3\n', @stdout
