@@ -18,7 +18,7 @@ if (programFile === '-') {
       buffer += chunk.toString('utf8');
     })
     .on('end', function() {
-      runCode(buffer, '/dev/stdin');
+      runCode(buffer, undefined);
     });
 } else {
   if (typeof programFile !== 'string') {
