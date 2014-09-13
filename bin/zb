@@ -11,6 +11,7 @@ function runCode(source, filename) {
 }
 
 var programFile = process.argv[2];
+process.argv = process.argv.slice(0, 2).concat(process.argv.slice(3));
 if (programFile === '-') {
   var buffer = '';
   process.stdin

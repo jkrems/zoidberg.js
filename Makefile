@@ -18,6 +18,9 @@ tmp/hello.js: example/hello.berg build
 tmp/enum.js: example/enum.berg build
 	./bin/zbc $< >$@
 
+tmp/greet.js: example/greet.berg build
+	./bin/zbc $< >$@
+
 .PHONY: hello
 hello: tmp/hello.js
 	@node --harmony tmp/hello.js
@@ -29,3 +32,11 @@ enum: tmp/enum.js
 	@echo ""
 	@echo "--- Execution --"
 	@node --harmony tmp/enum.js
+
+.PHONY: greet
+greet: tmp/greet.js
+	@echo "--- Source ---"
+	@cat tmp/greet.js
+	@echo ""
+	@echo "--- Execution --"
+	@node --harmony tmp/greet.js Joe 3
