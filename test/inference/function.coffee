@@ -130,6 +130,19 @@ describe 'inference:function', ->
           @FunctionType.withTypes([xType, yType, xType])
         )
 
+    describe 'trying to add strings', ->
+      beforeEach ->
+        @ast = Parser.parse """
+          f(x, y) = x + y
+          ab = f("a", "b")
+          """
+
+      it 'fails because String.+ is not defined', ->
+        err = assert.throws =>
+          infer @ast, @typeSystem
+
+        assert.equal '@String does not implement required `+`', err.message
+
     describe 'with x and y using same type variable', ->
       beforeEach ->
         @ast = Parser.parse 'f(x: a, y: a) = x + y'
