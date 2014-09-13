@@ -3,10 +3,26 @@
 
 var fs = require('fs');
 
-var programFile = process.argv[2];
-var source = fs.readFileSync(programFile, 'utf8');
+function runCode(source, filename) {
+  var zoidberg = require('../');
+  zoidberg.runMain(source, {
+    filename: filename
+  });
+}
 
-var zoidberg = require('../');
-zoidberg.runMain(source, {
-  filename: programFile
-});
+var programFile = process.argv[2];
+if (programFile === '-') {
+  var buffer = '';
+  process.stdin
+    .on('data', function(chunk) {
+      buffer += chunk.toString('utf8');
+    })
+    .on('end', function() {
+      runCode(buffer, undefined);
+    });
+} else {
+  if (typeof programFile !== 'string') {
+    throw new Error('Usage: zb [ <filename> | - ] args*');
+  }
+  runCode(fs.readFileSync(programFile, 'utf8'), programFile);
+}

@@ -23,8 +23,8 @@ strList =
 #       List.Empty()))
 
 main() = {
-  printf("Length of %j: %d", intList, length(intList));
-  printf("Length of %j: %d", strList, length(strList));
-  # printf("Length of %j: %d", mixedList, length(mixedList));
+  printf("Length of %j: %j", intList, length(intList));
+  printf("Length of %j: %j", strList, length(strList));
+  # printf("Length of %j: %j", mixedList, length(mixedList));
   0
 }
