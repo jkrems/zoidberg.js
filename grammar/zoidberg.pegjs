@@ -377,25 +377,23 @@ AddExpression
     return buildBinaryExpression(first, rest);
   }
 
-MatchElseCondition
-  = ElseToken _ "=>" {
-    return new ZB.LiteralExpression(getLocation(), true,
-      new Types.TypeReference('Bool'));
+CatchAllPattern
+  = ElseToken {
+    return new ZB.CatchAllPattern(getLocation());
   }
 
-MatchValueCondition
-  = right:UnaryExpression _ "=>" {
-    var left = new ZB.IdentifierExpression(getLocation(), 'matchTarget$$');
-    return new ZB.BinaryExpression(getLocation(), '==', left, right);
+BindingPattern
+  = bindings:UnaryExpression {
+    return new ZB.BindingPattern(getLocation(), bindings);
   }
 
-MatchCondition
-  = MatchElseCondition
-  / MatchValueCondition
+MatchPattern
+  = CatchAllPattern
+  / BindingPattern
 
 MatchCase
-  = condition:MatchCondition _ body:ExpressionBlock {
-    return new ZB.MatchCase(getLocation(), condition, body);
+  = pattern:MatchPattern _ "=>" _ body:ExpressionBlock {
+    return new ZB.MatchCase(getLocation(), pattern, body);
   }
 
 MatchCases
@@ -447,7 +445,7 @@ EnumConstructor
   = name:Identifier _ params:ParameterList {
     return new ZB.FunctionDeclaration(
       getLocation(), name, _.pluck(params, 'name'), /* body = */ null,
-      new Types.TypeReference('Function',
+      new Types.TypeReference('EnumConstructor',
         _.pluck(params, 'dataType').concat([ /* returnType = */ undefined ])));
   }
 

@@ -30,3 +30,21 @@ describe 'parser:match', ->
       assert.truthy 'instanceof MatchExpression', matchExpr instanceof ZB.MatchExpression
       assert.equal 'x', matchExpr.target.name
       assert.equal 2, matchExpr.cases.length
+
+  describe 'match with ADT', ->
+    source =
+      """
+      length(list) = match list {
+        List.Node(value, next) => 1 + length(next)
+        List.Empty() => 0
+      }
+      """
+
+    before ->
+      @ast = Parser.parse source
+
+    it 'matches stuff', ->
+      matchExpr = @ast.body[0].body
+      assert.truthy 'instanceof MatchExpression', matchExpr instanceof ZB.MatchExpression
+      assert.equal 'list', matchExpr.target.name
+      assert.equal 2, matchExpr.cases.length

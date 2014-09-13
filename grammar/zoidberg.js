@@ -234,18 +234,16 @@ module.exports = (function() {
           },
         peg$c138 = /^[+\-]/,
         peg$c139 = { type: "class", value: "[+\\-]", description: "[+\\-]" },
-        peg$c140 = "=>",
-        peg$c141 = { type: "literal", value: "=>", description: "\"=>\"" },
-        peg$c142 = function() {
-            return new ZB.LiteralExpression(getLocation(), true,
-              new Types.TypeReference('Bool'));
+        peg$c140 = function() {
+            return new ZB.CatchAllPattern(getLocation());
           },
-        peg$c143 = function(right) {
-            var left = new ZB.IdentifierExpression(getLocation(), 'matchTarget$$');
-            return new ZB.BinaryExpression(getLocation(), '==', left, right);
+        peg$c141 = function(bindings) {
+            return new ZB.BindingPattern(getLocation(), bindings);
           },
-        peg$c144 = function(condition, body) {
-            return new ZB.MatchCase(getLocation(), condition, body);
+        peg$c142 = "=>",
+        peg$c143 = { type: "literal", value: "=>", description: "\"=>\"" },
+        peg$c144 = function(pattern, body) {
+            return new ZB.MatchCase(getLocation(), pattern, body);
           },
         peg$c145 = function(first, rest) {
             return buildList(first, rest, 1);
@@ -277,7 +275,7 @@ module.exports = (function() {
         peg$c156 = function(name, params) {
             return new ZB.FunctionDeclaration(
               getLocation(), name, _.pluck(params, 'name'), /* body = */ null,
-              new Types.TypeReference('Function',
+              new Types.TypeReference('EnumConstructor',
                 _.pluck(params, 'dataType').concat([ /* returnType = */ undefined ])));
           },
         peg$c157 = function(ctors) {
@@ -2838,100 +2836,76 @@ module.exports = (function() {
       return s0;
     }
 
-    function peg$parseMatchElseCondition() {
-      var s0, s1, s2, s3;
+    function peg$parseCatchAllPattern() {
+      var s0, s1;
 
       s0 = peg$currPos;
       s1 = peg$parseElseToken();
       if (s1 !== peg$FAILED) {
-        s2 = peg$parse_();
-        if (s2 !== peg$FAILED) {
-          if (input.substr(peg$currPos, 2) === peg$c140) {
-            s3 = peg$c140;
-            peg$currPos += 2;
-          } else {
-            s3 = peg$FAILED;
-            if (peg$silentFails === 0) { peg$fail(peg$c141); }
-          }
-          if (s3 !== peg$FAILED) {
-            peg$reportedPos = s0;
-            s1 = peg$c142();
-            s0 = s1;
-          } else {
-            peg$currPos = s0;
-            s0 = peg$c0;
-          }
-        } else {
-          peg$currPos = s0;
-          s0 = peg$c0;
-        }
-      } else {
-        peg$currPos = s0;
-        s0 = peg$c0;
+        peg$reportedPos = s0;
+        s1 = peg$c140();
       }
+      s0 = s1;
 
       return s0;
     }
 
-    function peg$parseMatchValueCondition() {
-      var s0, s1, s2, s3;
+    function peg$parseBindingPattern() {
+      var s0, s1;
 
       s0 = peg$currPos;
       s1 = peg$parseUnaryExpression();
       if (s1 !== peg$FAILED) {
-        s2 = peg$parse_();
-        if (s2 !== peg$FAILED) {
-          if (input.substr(peg$currPos, 2) === peg$c140) {
-            s3 = peg$c140;
-            peg$currPos += 2;
-          } else {
-            s3 = peg$FAILED;
-            if (peg$silentFails === 0) { peg$fail(peg$c141); }
-          }
-          if (s3 !== peg$FAILED) {
-            peg$reportedPos = s0;
-            s1 = peg$c143(s1);
-            s0 = s1;
-          } else {
-            peg$currPos = s0;
-            s0 = peg$c0;
-          }
-        } else {
-          peg$currPos = s0;
-          s0 = peg$c0;
-        }
-      } else {
-        peg$currPos = s0;
-        s0 = peg$c0;
+        peg$reportedPos = s0;
+        s1 = peg$c141(s1);
       }
+      s0 = s1;
 
       return s0;
     }
 
-    function peg$parseMatchCondition() {
+    function peg$parseMatchPattern() {
       var s0;
 
-      s0 = peg$parseMatchElseCondition();
+      s0 = peg$parseCatchAllPattern();
       if (s0 === peg$FAILED) {
-        s0 = peg$parseMatchValueCondition();
+        s0 = peg$parseBindingPattern();
       }
 
       return s0;
     }
 
     function peg$parseMatchCase() {
-      var s0, s1, s2, s3;
+      var s0, s1, s2, s3, s4, s5;
 
       s0 = peg$currPos;
-      s1 = peg$parseMatchCondition();
+      s1 = peg$parseMatchPattern();
       if (s1 !== peg$FAILED) {
         s2 = peg$parse_();
         if (s2 !== peg$FAILED) {
-          s3 = peg$parseExpressionBlock();
+          if (input.substr(peg$currPos, 2) === peg$c142) {
+            s3 = peg$c142;
+            peg$currPos += 2;
+          } else {
+            s3 = peg$FAILED;
+            if (peg$silentFails === 0) { peg$fail(peg$c143); }
+          }
           if (s3 !== peg$FAILED) {
-            peg$reportedPos = s0;
-            s1 = peg$c144(s1, s3);
-            s0 = s1;
+            s4 = peg$parse_();
+            if (s4 !== peg$FAILED) {
+              s5 = peg$parseExpressionBlock();
+              if (s5 !== peg$FAILED) {
+                peg$reportedPos = s0;
+                s1 = peg$c144(s1, s5);
+                s0 = s1;
+              } else {
+                peg$currPos = s0;
+                s0 = peg$c0;
+              }
+            } else {
+              peg$currPos = s0;
+              s0 = peg$c0;
+            }
           } else {
             peg$currPos = s0;
             s0 = peg$c0;
