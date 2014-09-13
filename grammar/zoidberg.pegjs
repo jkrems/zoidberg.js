@@ -371,7 +371,7 @@ MulExpression
     return buildBinaryExpression(first, rest);
   }
 
-AddOperator = [+-]
+AddOperator = "++" / [+-]
 AddExpression
   = first:MulExpression rest:(__ AddOperator __ MulExpression)* {
     return buildBinaryExpression(first, rest);
