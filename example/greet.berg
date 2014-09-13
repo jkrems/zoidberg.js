@@ -40,9 +40,11 @@ square(x) =
 #     if (require.main === module)
 #       process.exit(main(process.argv))
 #
-main(x: Int) = {
-  match {
-    isOne(x) => printf("Was called with `1`")
+main(name: String, x: Int) = {
+  printf("Hello, %s!", name);
+
+  match isOne(x) {
+    true => printf("Was called with `1`")
     else => printf("Wasn't called with %j but with %j", 1, x)
   };
 
