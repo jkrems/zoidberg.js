@@ -1,0 +1,7 @@
+import "fs"
+
+main() = {
+  printf(
+    fs.readFileSync("example/files/hello.txt", "utf8"));
+  0
+}
