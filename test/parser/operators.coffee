@@ -26,6 +26,35 @@ describe 'parser:operators', ->
       assert.equal 10, expr.left.left.value
       assert.equal 5, expr.left.right.value
 
+  describe 'concatenation', ->
+    describe 'string', ->
+      before ->
+        @ast = Parser.parse 'x = "Hello" ++ " " ++ "World!"'
+
+      it 'creates a body with nested binary expressions', ->
+        [ { body: expr } ] = @ast.body
+        # Expected tree: (- (+ 10 5) 3)
+        assert.equal '++', expr.operator
+        assert.equal 'World!', expr.right.value
+
+        assert.equal '++', expr.left.operator
+        assert.equal 'Hello', expr.left.left.value
+        assert.equal ' ', expr.left.right.value
+
+    describe 'array', ->
+      before ->
+        @ast = Parser.parse 'x = [ 0, 1 ] ++ [ 2 ] ++ []'
+
+      it 'creates a body with nested binary expressions', ->
+        [ { body: expr } ] = @ast.body
+        # Expected tree: (- (+ 10 5) 3)
+        assert.equal '++', expr.operator
+        assert.equal 'ArrayExpression', expr.right.type
+
+        assert.equal '++', expr.left.operator
+        assert.equal 'ArrayExpression', expr.left.left.type
+        assert.equal 'ArrayExpression', expr.left.right.type
+
   describe 'simple multiplication', ->
     before ->
       @ast = Parser.parse 'x = 10 / 5 * 3 % 4'
