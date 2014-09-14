@@ -5,14 +5,16 @@ var path = require('path');
 
 var _ = require('lodash');
 
-var zbBin = path.resolve(__dirname, '..', '..', 'bin', 'zb');
+var projDir = path.resolve(__dirname, '..', '..');
+var zbBin = path.join(projDir, 'bin', 'zb');
 
 function runCode(source) {
   return function(done) {
     var self = this;
 
     var opts = {
-      env: _.defaults({ DEBUG: '' }, process.env)
+      env: _.defaults({ DEBUG: '' }, process.env),
+      cwd: projDir
     };
 
     var child = execFile(process.execPath, [
