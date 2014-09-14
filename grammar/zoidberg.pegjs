@@ -230,6 +230,7 @@ ElseToken = "else" !IdentifierPart
 EnumToken = "enum" !IdentifierPart
 TrueToken = "true" !IdentifierPart
 FalseToken = "false" !IdentifierPart
+ImportToken = "import" !IdentifierPart
 
 ReservedWord
   = Keyword
@@ -240,6 +241,7 @@ Keyword
   / EnumToken
   / TrueToken
   / FalseToken
+  / ImportToken
 
 Program
   = body:Declarations {
@@ -477,9 +479,22 @@ ValueDeclaration
     }
   }
 
+Extraction
+  = name:Identifier dataType:(_ TypeHint)? {
+    if (dataType) dataType = dataType[1];
+    return new ZB.Identifier(getLocation(), name, dataType);
+  }
+
+ImportDeclaration
+  = ImportToken extraction:(__ Extraction __ "from")? __ source:String {
+    if (extraction) extraction = extraction[1];
+    return new ZB.ImportDeclaration(getLocation(), source, extraction);
+  }
+
 Declaration
   = TypeDeclaration
   / ValueDeclaration
+  / ImportDeclaration
 
 Declarations
   = first:Declaration rest:(__ Declaration)* {
